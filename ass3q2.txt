@@ -1,0 +1,59 @@
+import pandas as pd
+import numpy as np
+
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+
+# Create dataset
+data = {
+    "Age": [22, 25, np.nan, 30, 28],
+    "Salary": [25000, 32000, 28000, np.nan, 45000],
+    "Department": ["IT", "HR", "IT", "Finance", "HR"],
+    "Years of Experience": [1, 2, 3, 5, 7]
+}
+
+df = pd.DataFrame(data)
+
+print("--- Original Dataset ---")
+print(df)
+
+X = df.copy()
+
+numeric_features = [
+    "Age",
+    "Salary",
+    "Years of Experience"
+]
+
+categorical_features = [
+    "Department"
+]
+
+# Use MinMaxScaler
+numeric_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", MinMaxScaler())
+])
+
+categorical_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("onehot", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", numeric_transformer, numeric_features),
+        ("cat", categorical_transformer, categorical_features)
+    ]
+)
+
+X_processed = preprocessor.fit_transform(X)
+
+print("\n--- MinMaxScaler Transformed Data ---")
+
+if hasattr(X_processed, "toarray"):
+    print(X_processed.toarray())
+else:
+    print(X_processed)
